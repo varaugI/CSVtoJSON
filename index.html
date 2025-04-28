@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV to JSON Converter</title>
+</head>
+
+<body>
+    <h2>Upload a CSV File</h2>
+
+    <input type="file" id="csvFileInput" accept=".csv">
+    <pre id="jsonOutput"></pre>
+
+    <script>
+        function csvToJson(csv) {
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',');
+            const result = [];
+            for (let i = 1; i < lines.length; i++) {
+                const obj = {};
+                let currentLine = lines[i];
+                const regex = /(".*?"|[^",\n]+)(?=\s*,|\s*$)/g;
+                const values = [];
+                let match;
+                while ((match = regex.exec(currentLine)) !== null) {
+                    values.push(match[0].replace(/(^"|"$)/g, '').trim());
+                }
+
+                for (let j = 0; j < headers.length; j++) {
+                    obj[headers[j].trim()] = values[j]?.trim();
+                }
+                result.push(obj);
+            }
+
+            return result;
+        }
+        document.getElementById('csvFileInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const csv = e.target.result;
+                const jsonData = csvToJson(csv);
+                document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
+            };
+            reader.readAsText(file);
+        });
+    </script>
+</body>
+
+</html>
